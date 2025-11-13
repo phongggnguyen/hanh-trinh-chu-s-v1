@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sort:*)",
+      "Bash(node:*)",
+      "Bash(provinces-data.json)",
+      "Bash(provinces-full-data.json)",
+      "Bash(npm install)",
+      "Bash(npx tsc --noEmit)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
