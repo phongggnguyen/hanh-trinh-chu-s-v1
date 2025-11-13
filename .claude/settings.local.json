@@ -6,7 +6,11 @@
       "Bash(provinces-data.json)",
       "Bash(provinces-full-data.json)",
       "Bash(npm install)",
-      "Bash(npx tsc --noEmit)"
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev)",
+      "WebSearch",
+      "WebFetch(domain:ai.google.dev)"
     ],
     "deny": [],
     "ask": []

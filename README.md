@@ -14,7 +14,12 @@ Web game giáo dục giúp người chơi khám phá 63 tỉnh thành Việt Nam
 ## Công nghệ
 
 - **Frontend**: Next.js 15 (App Router), React 18, TypeScript
-- **AI**: Genkit + Google Gemini 2.5 Pro (câu hỏi), Gemini 2.5 Flash (ảnh)
+- **AI**: Google Gemini 2.0 Flash (sinh câu hỏi trắc nghiệm)
+  - Model: `gemini-2.0-flash-exp`
+  - SDK: `@google/generative-ai`
+  - Ưu điểm: Nhanh hơn, rẻ hơn, vẫn chất lượng cao
+  - Fallback: Mock data nếu API fails
+  - Image generation: Skipped cho MVP (có thể thêm Imagen API sau)
 - **UI**: Tailwind CSS, shadcn/ui, Radix UI, Lucide Icons
 - **State**: React Context + useReducer
 - **Validation**: Zod
