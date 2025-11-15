@@ -14,12 +14,13 @@ Web game giáo dục giúp người chơi khám phá 63 tỉnh thành Việt Nam
 ## Công nghệ
 
 - **Frontend**: Next.js 15 (App Router), React 18, TypeScript
-- **AI**: Google Gemini 2.0 Flash (sinh câu hỏi trắc nghiệm)
-  - Model: `gemini-2.0-flash-exp`
-  - SDK: `@google/generative-ai`
-  - Ưu điểm: Nhanh hơn, rẻ hơn, vẫn chất lượng cao
+- **AI**: GPT-4o-mini via MegaLLM (sinh câu hỏi trắc nghiệm)
+  - Model: `gpt-4o-mini`
+  - Provider: MegaLLM (https://ai.megallm.io)
+  - SDK: `openai` (OpenAI official SDK)
+  - Ưu điểm: Nhanh, tiết kiệm, chất lượng cao, OpenAI compatible
   - Fallback: Mock data nếu API fails
-  - Image generation: Skipped cho MVP (có thể thêm Imagen API sau)
+  - Image generation: Skipped cho MVP (có thể thêm DALL-E sau)
 - **UI**: Tailwind CSS, shadcn/ui, Radix UI, Lucide Icons
 - **State**: React Context + useReducer
 - **Validation**: Zod
@@ -49,12 +50,12 @@ Tạo file `.env.local` từ file mẫu:
 cp .env.local.example .env.local
 ```
 
-Sau đó thêm Google Gemini API key vào file `.env.local`:
+Sau đó thêm MegaLLM API key vào file `.env.local`:
 ```
-GOOGLE_GENAI_API_KEY=your_api_key_here
+MEGALLM_API_KEY=your-api-key-here
 ```
 
-**Lấy API key**: Truy cập [Google AI Studio](https://makersuite.google.com/app/apikey) để tạo API key miễn phí.
+**Lấy API key**: Truy cập [MegaLLM](https://ai.megallm.io) để tạo API key.
 
 4. **Chạy development server**
 ```bash
@@ -149,7 +150,7 @@ src/
 
 1. Push code lên GitHub
 2. Import vào Vercel
-3. Thêm environment variable: `GOOGLE_GENAI_API_KEY`
+3. Thêm environment variable: `MEGALLM_API_KEY`
 4. Deploy!
 
 ### Các platform khác

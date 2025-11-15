@@ -1,7 +1,7 @@
 'use server';
 
 import { QuizQuestion } from '@/lib/types';
-import { generateQuizQuestions, generateQuizImage } from '@/ai/gemini-client';
+import { generateQuizQuestions, generateQuizImage } from '@/ai/openai-client';
 import { z } from 'zod';
 
 // In-memory cache for quiz data (TTL ~24h)

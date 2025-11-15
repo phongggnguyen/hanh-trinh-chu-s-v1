@@ -2,32 +2,32 @@
 
 ## Tổng quan
 
-Project sử dụng **Google Gemini 2.0 Flash** để sinh câu hỏi trắc nghiệm tự động cho 63 tỉnh thành Việt Nam.
+Project sử dụng **GPT-4o-mini** qua nhà cung cấp **MegaLLM** để sinh câu hỏi trắc nghiệm tự động cho 63 tỉnh thành Việt Nam.
 
 ## Chi tiết Models
 
-### 1. Gemini 2.0 Flash (Text Generation)
+### 1. GPT-4o-mini via MegaLLM (Text Generation)
 
 **Mục đích**: Sinh câu hỏi trắc nghiệm về địa lý, lịch sử, văn hóa của từng tỉnh
 
-**Model ID**: `gemini-2.0-flash-exp`
+**Model ID**: `gpt-4o-mini`
 
-**Tại sao chọn Flash thay vì Pro?**
-- ⚡ **Nhanh hơn**: 2-3x tốc độ so với Pro
-- 💰 **Rẻ hơn**: Chi phí thấp hơn đáng kể
-- 🎯 **Đủ tốt**: Chất lượng vẫn rất cao cho task structured output
-- 🔥 **Mới nhất**: Gemini 2.0 với nhiều cải tiến
+**Nhà cung cấp**: MegaLLM (https://ai.megallm.io)
 
-**SDK**: `@google/generative-ai` v0.24.1
+**Tại sao chọn GPT-4o-mini?**
+- ⚡ **Nhanh**: Phản hồi nhanh và hiệu quả
+- 💰 **Tiết kiệm**: Chi phí thấp cho structured output
+- 🎯 **Chính xác**: Chất lượng cao cho task sinh câu hỏi
+- 🔥 **OpenAI Compatible**: Sử dụng OpenAI SDK chuẩn
+
+**SDK**: `openai` (OpenAI official SDK)
 
 **Cấu hình**:
 ```javascript
 {
-  model: 'gemini-2.0-flash-exp',
+  model: 'gpt-4o-mini',
   temperature: 1.0,      // Creativity cao để câu hỏi đa dạng, ngẫu nhiên
-  topK: 40,
-  topP: 0.95,
-  maxOutputTokens: 2048
+  max_tokens: 2048
 }
 ```
 
@@ -107,14 +107,14 @@ Có thể tích hợp:
 ## API Key Setup
 
 ### Lấy API Key:
-1. Truy cập: https://makersuite.google.com/app/apikey
-2. Đăng nhập Google account
+1. Truy cập: https://ai.megallm.io
+2. Đăng ký/Đăng nhập tài khoản
 3. Tạo API key mới
 4. Copy và paste vào `.env.local`
 
 ### Environment Variable:
 ```bash
-GOOGLE_GENAI_API_KEY=your_api_key_here
+MEGALLM_API_KEY=your-api-key-here
 ```
 
 ### Security:
@@ -186,7 +186,7 @@ GOOGLE_GENAI_API_KEY=your_api_key_here
 
 ## Tài liệu tham khảo
 
-- [Google Gemini API Docs](https://ai.google.dev/docs)
-- [Generative AI SDK](https://www.npmjs.com/package/@google/generative-ai)
-- [Prompt Engineering Guide](https://ai.google.dev/docs/prompt_best_practices)
-- [Google AI Studio](https://makersuite.google.com/)
+- [MegaLLM Documentation](https://ai.megallm.io/docs)
+- [OpenAI SDK](https://www.npmjs.com/package/openai)
+- [GPT-4o-mini Guide](https://platform.openai.com/docs/models/gpt-4o-mini)
+- [MegaLLM Platform](https://ai.megallm.io)
