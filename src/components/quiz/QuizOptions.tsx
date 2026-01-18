@@ -46,13 +46,13 @@ export function QuizOptions({
                 return (
                     <Button
                         key={index}
-                        variant="outline"
+                        variant="ghost"
                         className={cn(
                             'h-auto py-4 px-6 text-left justify-start whitespace-normal font-body text-base transition-all duration-300',
-                            'glass-light border border-white/20 hover-lift',
+                            'bg-card border-2 border-primary/10 hover:border-primary/50 shadow-sm hover:shadow-md hover:-translate-y-1',
                             isHidden && 'opacity-20 pointer-events-none grayscale',
-                            showResult && isCorrect && 'bg-success/20 border-success shadow-success-glow',
-                            showResult && isSelected && !isCorrect && 'bg-destructive/20 border-destructive'
+                            showResult && isCorrect && 'bg-success/10 border-success text-success shadow-[0_0_15px_rgba(46,204,113,0.3)]',
+                            showResult && isSelected && !isCorrect && 'bg-destructive/10 border-destructive text-destructive shadow-[0_0_15px_rgba(192,57,43,0.3)]'
                         )}
                         onClick={() => onSelectAnswer(option)}
                         disabled={isAnswered || isHidden}

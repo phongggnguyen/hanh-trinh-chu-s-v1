@@ -128,10 +128,10 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
                 tabIndex={isInteractive ? 0 : -1}
                 role={isInteractive ? 'button' : undefined}
                 aria-label={`${province.name} - ${status === 'conquered'
-                    ? 'đã chinh phục'
-                    : status === 'unlocked'
-                      ? 'có thể chơi'
-                      : 'đã khóa'
+                  ? 'đã chinh phục'
+                  : status === 'unlocked'
+                    ? 'có thể chơi'
+                    : 'đã khóa'
                   }`}
               >
                 <title>{province.name}</title>
@@ -165,10 +165,10 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
                 tabIndex={isInteractive ? 0 : -1}
                 role={isInteractive ? 'button' : undefined}
                 aria-label={`${island.name} - ${status === 'conquered'
-                    ? 'Đã chinh phục'
-                    : status === 'unlocked'
-                      ? 'Có thể chơi'
-                      : 'Đang khóa'
+                  ? 'Đã chinh phục'
+                  : status === 'unlocked'
+                    ? 'Có thể chơi'
+                    : 'Đang khóa'
                   }`}
               >
                 <title>{island.name}</title>

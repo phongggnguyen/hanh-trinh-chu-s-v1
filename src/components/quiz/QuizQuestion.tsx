@@ -19,11 +19,11 @@ export function QuizQuestion({
 }: QuizQuestionProps) {
     return (
         <Card
-            className="glass-card shadow-glass border border-white/20 animate-slide-in-up"
+            className="bg-card/95 backdrop-blur-sm border-2 border-primary/10 shadow-lg animate-slide-in-up"
             style={{ animationDelay: `${animationDelay}ms` }}
         >
             <CardHeader>
-                <CardTitle className="text-xl font-heading text-foreground/90">
+                <CardTitle className="text-2xl font-bold font-heading text-primary leading-tight">
                     {question.question}
                 </CardTitle>
             </CardHeader>

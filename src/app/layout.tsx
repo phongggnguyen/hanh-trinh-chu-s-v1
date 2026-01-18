@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { GameProvider } from '@/contexts/game-context';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { DongSonPattern, TextureOverlay } from '@/components/ui/patterns';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 
@@ -73,10 +74,18 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>
-        <ErrorBoundary>
-          <GameProvider>{children}</GameProvider>
-        </ErrorBoundary>
+      <body className={`${inter.className} min-h-screen relative overflow-x-hidden selection:bg-primary/20`}>
+        {/* Global Background Elements */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <DongSonPattern className="opacity-[0.03] text-primary w-full h-full object-cover" />
+          <TextureOverlay />
+        </div>
+
+        <main className="relative z-10">
+          <ErrorBoundary>
+            <GameProvider>{children}</GameProvider>
+          </ErrorBoundary>
+        </main>
       </body>
     </html>
   );

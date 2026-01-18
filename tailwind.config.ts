@@ -19,9 +19,9 @@ const config = {
     },
     extend: {
       fontFamily: {
-        heading: ['Nunito', 'system-ui', 'sans-serif'],
-        body: ['Inter', 'system-ui', 'sans-serif'],
-        accent: ['Quicksand', 'system-ui', 'sans-serif'],
+        heading: ['Merriweather', 'serif'],
+        body: ['Inter', 'sans-serif'],
+        accent: ['Quicksand', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

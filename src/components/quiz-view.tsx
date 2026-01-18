@@ -127,7 +127,7 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   if (loading) {
     return (
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-        <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
+        {/* Background handled by global layout */}
         <div className="relative z-10 text-center animate-bounce-in">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="mt-6 text-lg font-heading text-muted-foreground">
@@ -157,14 +157,7 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   // Main quiz view
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
-
-      {/* Decorative Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-      </div>
+      {/* Background is handled by layout.tsx global pattern */}
 
       {/* Header */}
       <QuizHeader
