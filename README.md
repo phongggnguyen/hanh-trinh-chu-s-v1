@@ -14,13 +14,13 @@ Web game giáo dục giúp người chơi khám phá 63 tỉnh thành Việt Nam
 ## Công nghệ
 
 - **Frontend**: Next.js 15 (App Router), React 18, TypeScript
-- **AI**: GPT-4o-mini via MegaLLM (sinh câu hỏi trắc nghiệm)
-  - Model: `gpt-4o-mini`
-  - Provider: MegaLLM (https://ai.megallm.io)
-  - SDK: `openai` (OpenAI official SDK)
-  - Ưu điểm: Nhanh, tiết kiệm, chất lượng cao, OpenAI compatible
+- **AI**: Google Gemini 3 Flash Preview (tạo câu hỏi trắc nghiệm)
+  - Model: `gemini-3-flash-preview`
+  - Provider: Google AI Studio (https://aistudio.google.com)
+  - SDK: `@google/genai` v1.37.0
+  - Ưu điểm: Nhanh, chính xác, miễn phí (có giới hạn quota)
   - Fallback: Mock data nếu API fails
-  - Image generation: Skipped cho MVP (có thể thêm DALL-E sau)
+  - Image generation: Skipped cho MVP (có thể thêm Imagen sau)
 - **UI**: Tailwind CSS, shadcn/ui, Radix UI, Lucide Icons
 - **State**: React Context + useReducer
 - **Validation**: Zod
@@ -50,12 +50,12 @@ Tạo file `.env.local` từ file mẫu:
 cp .env.local.example .env.local
 ```
 
-Sau đó thêm MegaLLM API key vào file `.env.local`:
+Sau đó thêm Google Gemini API key vào file `.env.local`:
 ```
-MEGALLM_API_KEY=your-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
 ```
 
-**Lấy API key**: Truy cập [MegaLLM](https://ai.megallm.io) để tạo API key.
+**Lấy API key**: Truy cập [Google AI Studio](https://aistudio.google.com/apikey) để tạo API key (miễn phí).
 
 4. **Chạy development server**
 ```bash
@@ -87,18 +87,18 @@ src/
 │   ├── quiz-view.tsx       # Quiz interface with timer
 │   ├── quiz-completion-modal.tsx
 │   ├── travel-journal.tsx  # Progress tracking
+│   ├── game/               # Game components (modular)
+│   ├── quiz/               # Quiz components (modular)
 │   └── ui/                 # shadcn/ui components
 ├── contexts/
 │   └── game-context.tsx    # Game state management
 ├── actions/
 │   └── quiz.actions.ts     # Server Actions (getQuizForProvince)
 ├── ai/
-│   ├── genkit.ts           # Genkit configuration
-│   └── flows/
-│       ├── generate-quiz-questions.ts
-│       └── generate-quiz-images.ts
+│   └── gemini-client.ts    # Google Gemini AI client
 └── lib/
     ├── types.ts            # TypeScript types
+    ├── constants.ts        # App constants & config
     ├── provinces.ts        # 63 provinces data + neighbors
     └── utils.ts            # Utility functions
 ```
@@ -150,7 +150,7 @@ src/
 
 1. Push code lên GitHub
 2. Import vào Vercel
-3. Thêm environment variable: `MEGALLM_API_KEY`
+3. Thêm environment variable: `GEMINI_API_KEY`
 4. Deploy!
 
 ### Các platform khác

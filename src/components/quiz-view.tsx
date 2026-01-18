@@ -72,6 +72,7 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
     }, 1000);
 
     return () => clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps  
   }, [loading, isAnswered, currentQuestionIndex, questions.length]);
 
   const currentQuestion = questions[currentQuestionIndex];
