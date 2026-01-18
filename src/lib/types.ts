@@ -45,3 +45,21 @@ export interface JournalEntry {
   conqueredAt: number; // timestamp
   score: number; // correct answers
 }
+
+// ===== API RESPONSE TYPES =====
+
+/** Generic API Response wrapper */
+export type ApiResponse<T> =
+  | { status: 'success'; data: T }
+  | { status: 'error'; error: ApiError };
+
+/** API Error structure */
+export interface ApiError {
+  message: string;
+  code?: string;
+  statusCode?: number;
+  details?: unknown;
+}
+
+/** Loading states for async operations */
+export type LoadingState = 'idle' | 'loading' | 'success' | 'error';

@@ -5,11 +5,9 @@ import { Province } from '@/lib/types';
 import { VietnamMap } from './vietnam-map';
 import { QuizView } from './quiz-view';
 import { QuizCompletionModal } from './quiz-completion-modal';
-import { TravelJournal } from './travel-journal';
-import { ProgressRing } from './ui/progress-ring';
-import { BadgeIcon } from './ui/badge-icon';
 import { useGame } from '@/contexts/game-context';
-import { Map, Trophy, Unlock, Lock } from 'lucide-react';
+import { GameHeader, GameStats, GameInstructions } from '@/components/game';
+import { QUIZ_CONFIG } from '@/lib/constants';
 
 export function GameBoard() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
@@ -65,7 +63,7 @@ export function GameBoard() {
             open={showCompletionModal}
             province={quizResult.province}
             score={quizResult.score}
-            totalQuestions={5}
+            totalQuestions={QUIZ_CONFIG.QUESTIONS_PER_QUIZ}
             success={quizResult.success}
             onContinue={handleContinue}
           />
@@ -76,8 +74,6 @@ export function GameBoard() {
 
   const conqueredCount = state.conquered.size;
   const unlockedCount = state.unlocked.size;
-  const totalProvinces = 63;
-  const progress = (conqueredCount / totalProvinces) * 100;
 
   // Show map view by default
   return (
@@ -92,101 +88,11 @@ export function GameBoard() {
         <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-success/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
       </div>
 
-      {/* Floating Glassmorphism Header */}
-      <header className="fixed top-4 left-4 right-4 z-40">
-        <div className="max-w-7xl mx-auto glass-card rounded-2xl shadow-glass">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center shadow-glow-sm hover:shadow-glow-md transition-all duration-300 hover:scale-110 cursor-pointer">
-                  <Map className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold font-heading gradient-text">
-                    Hành Trình Chữ S
-                  </h1>
-                  <p className="text-sm text-muted-foreground font-body">
-                    Khám phá 63 tỉnh thành Việt Nam
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <TravelJournal />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header */}
+      <GameHeader />
 
       {/* Stats Bar */}
-      <div className="fixed top-24 left-4 right-4 z-30">
-        <div className="max-w-7xl mx-auto glass-light rounded-xl shadow-glass border border-white/20">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-center gap-8">
-              {/* Overall Progress */}
-              <div className="flex items-center gap-4">
-                <ProgressRing
-                  value={conqueredCount}
-                  max={totalProvinces}
-                  size={60}
-                  strokeWidth={6}
-                  color="success"
-                  showLabel={false}
-                />
-                <div>
-                  <div className="text-lg font-bold font-heading">
-                    {conqueredCount}/{totalProvinces}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-body">
-                    Tỉnh đã chinh phục
-                  </div>
-                </div>
-              </div>
-
-              <div className="h-12 w-px bg-border" />
-
-              {/* Conquered */}
-              <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                <BadgeIcon variant="conquered" size={48} animated={false} />
-                <div>
-                  <div className="text-lg font-bold font-heading text-success">
-                    {conqueredCount}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-body">
-                    Đã chinh phục
-                  </div>
-                </div>
-              </div>
-
-              {/* Unlocked */}
-              <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                <BadgeIcon variant="unlocked" size={48} animated showGlow />
-                <div>
-                  <div className="text-lg font-bold font-heading text-unlocked">
-                    {unlockedCount}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-body">
-                    Có thể chơi
-                  </div>
-                </div>
-              </div>
-
-              {/* Locked */}
-              <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                <BadgeIcon variant="locked" size={48} animated={false} />
-                <div>
-                  <div className="text-lg font-bold font-heading text-muted-foreground">
-                    {totalProvinces - unlockedCount}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-body">
-                    Đã khóa
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <GameStats conqueredCount={conqueredCount} unlockedCount={unlockedCount} />
 
       {/* Main Content */}
       <main className="relative z-10 pt-48 pb-16 px-4">
@@ -197,14 +103,7 @@ export function GameBoard() {
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 text-center animate-slide-in-up" style={{ animationDelay: '200ms' }}>
-            <div className="glass-light rounded-2xl p-6 inline-block border border-white/20">
-              <p className="text-sm text-foreground/80 font-body max-w-2xl">
-                <span className="font-semibold text-primary">🎯 Hướng dẫn:</span> Click vào các tỉnh màu xanh để bắt đầu quiz.
-                Trả lời đúng <span className="font-bold text-success">≥4/5 câu</span> để chinh phục và mở khóa các tỉnh lân cận.
-              </p>
-            </div>
-          </div>
+          <GameInstructions />
         </div>
       </main>
 
@@ -221,4 +120,3 @@ export function GameBoard() {
     </div>
   );
 }
-
