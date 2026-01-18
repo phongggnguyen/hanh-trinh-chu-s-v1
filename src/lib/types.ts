@@ -22,7 +22,7 @@ export interface GameState {
 }
 
 export type GameAction =
-  | { type: 'CONQUER_PROVINCE'; payload: { provinceId: ProvinceId; neighbors: ProvinceId[] } }
+  | { type: 'CONQUER_PROVINCE'; payload: { provinceId: ProvinceId; neighbors: ProvinceId[]; journalEntry: JournalEntry } }
   | { type: 'LOAD_STATE'; payload: { unlocked: ProvinceId[]; conquered: ProvinceId[] } };
 
 export interface PowerUp {

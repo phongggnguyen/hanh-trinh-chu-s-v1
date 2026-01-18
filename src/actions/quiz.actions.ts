@@ -3,15 +3,21 @@
 import { QuizQuestion } from '@/lib/types';
 import { generateQuizQuestions, generateQuizImage } from '@/ai/openai-client';
 import { z } from 'zod';
+import {
+  QUIZ_CONFIG,
+  CACHE_CONFIG,
+  RATE_LIMIT,
+  MESSAGES,
+} from '@/lib/constants';
 
 // In-memory cache for quiz data (TTL ~24h)
 const quizCache = new Map<string, { data: QuizQuestion[]; timestamp: number }>();
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const CACHE_TTL = CACHE_CONFIG.TTL;
 
 // Rate limiting map (simple in-memory)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX = 10; // 10 requests per minute
+const RATE_LIMIT_WINDOW = RATE_LIMIT.WINDOW_MS;
+const RATE_LIMIT_MAX = RATE_LIMIT.MAX_REQUESTS;
 
 // Input validation schema
 const ProvinceNameSchema = z.string().min(1).max(100);
@@ -84,7 +90,7 @@ export async function getQuizForProvince(
     // 2. Rate limiting (using province name as identifier for simplicity)
     // In production, use IP address or user ID
     if (!checkRateLimit(validatedProvinceName)) {
-      throw new Error('Rate limit exceeded. Please try again later.');
+      throw new Error(MESSAGES.ERRORS.RATE_LIMIT_EXCEEDED);
     }
 
     // 3. Check cache
@@ -98,7 +104,7 @@ export async function getQuizForProvince(
     // 4. Generate quiz questions
     const questionsResult = await generateQuizQuestions(
       validatedProvinceName,
-      5
+      QUIZ_CONFIG.QUESTIONS_PER_QUIZ
     );
 
     // 5. Generate images for each question (with fallback)
@@ -132,14 +138,14 @@ export async function getQuizForProvince(
       })
     );
 
-    // 6. Validate output (ensure 5 questions, 4 options each, etc.)
-    if (questionsWithImages.length !== 5) {
-      throw new Error('Failed to generate exactly 5 questions');
+    // 6. Validate output (ensure correct number of questions, 4 options each, etc.)
+    if (questionsWithImages.length !== QUIZ_CONFIG.QUESTIONS_PER_QUIZ) {
+      throw new Error(`Failed to generate exactly ${QUIZ_CONFIG.QUESTIONS_PER_QUIZ} questions`);
     }
 
     for (const q of questionsWithImages) {
-      if (q.options.length !== 4) {
-        throw new Error('Each question must have exactly 4 options');
+      if (q.options.length !== QUIZ_CONFIG.OPTIONS_PER_QUESTION) {
+        throw new Error(`Each question must have exactly ${QUIZ_CONFIG.OPTIONS_PER_QUESTION} options`);
       }
       if (!q.options.includes(q.correctAnswer)) {
         throw new Error('Correct answer must be one of the options');

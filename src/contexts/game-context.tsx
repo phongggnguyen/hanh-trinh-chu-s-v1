@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { GameState, GameAction, ProvinceId, JournalEntry } from '@/lib/types';
 import { DEFAULT_UNLOCKED_PROVINCES } from '@/lib/provinces';
+import { CACHE_CONFIG } from '@/lib/constants';
 
 // Extend GameState with journal entries
 interface ExtendedGameState extends GameState {
@@ -24,7 +25,7 @@ interface GameContextType {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 // Local storage key
-const STORAGE_KEY = 'hanh-trinh-chu-s-game-state';
+const STORAGE_KEY = CACHE_CONFIG.STORAGE_KEY;
 
 // Initial state
 const getInitialState = (): ExtendedGameState => {
@@ -60,7 +61,7 @@ function gameReducer(
 ): ExtendedGameState {
   switch (action.type) {
     case 'CONQUER_PROVINCE': {
-      const { provinceId, neighbors } = action.payload;
+      const { provinceId, neighbors, journalEntry } = action.payload;
 
       // Add province to conquered set
       const newConquered = new Set(state.conquered);
@@ -74,10 +75,14 @@ function gameReducer(
         }
       });
 
+      // Add to journal
+      const newJournal = [...state.journal, journalEntry];
+
       return {
         ...state,
         unlocked: newUnlocked,
         conquered: newConquered,
+        journal: newJournal,
       };
     }
 
@@ -122,23 +127,19 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     neighbors: ProvinceId[],
     score: number
   ) => {
-    // Add to journal
-    const newJournal: JournalEntry = {
+    // Create journal entry
+    const journalEntry: JournalEntry = {
       provinceId,
       provinceName,
       conqueredAt: Date.now(),
       score,
     };
 
-    // Update state
+    // Dispatch CONQUER_PROVINCE with journal entry
     dispatch({
       type: 'CONQUER_PROVINCE',
-      payload: { provinceId, neighbors },
+      payload: { provinceId, neighbors, journalEntry },
     });
-
-    // Update journal in state (we need to do this separately)
-    // For simplicity, we'll manage journal in the reducer by extending the action type
-    // But for now, let's keep it simple and manage it in the provider
   };
 
   const contextValue: GameContextType = {

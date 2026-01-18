@@ -52,7 +52,7 @@ Trả về ĐÚNG định dạng JSON sau (không thêm markdown, không thêm t
 }`;
 
     const response = await client.chat.completions.create({
-      model: 'deepseek-ai/deepseek-v3.1-terminus',
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
       temperature: 1.0,
       max_tokens: 2048,

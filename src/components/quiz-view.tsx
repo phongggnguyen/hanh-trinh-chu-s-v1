@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Province, QuizQuestion, PowerUp } from '@/lib/types';
+import { Province, QuizQuestion } from '@/lib/types';
 import { getQuizForProvince } from '@/actions/quiz.actions';
+import { QUIZ_CONFIG, TIMING, MESSAGES } from '@/lib/constants';
+import { QuizHeader, QuizPowerUps, QuizQuestion as QuizQuestionCard, QuizOptions, QuizFeedback } from '@/components/quiz';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Zap, Split } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { XCircle } from 'lucide-react';
 
 interface QuizViewProps {
   province: Province;
@@ -16,15 +16,18 @@ interface QuizViewProps {
 }
 
 export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
+  // State
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
+  const [timeLeft, setTimeLeft] = useState<number>(QUIZ_CONFIG.TIME_PER_QUESTION);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [isAnswered, setIsAnswered] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [powerUps, setPowerUps] = useState<PowerUp>({
+
+  // Power-ups state
+  const [powerUpsUsed, setPowerUpsUsed] = useState({
     fiftyFifty: false,
     timeExtension: false,
   });
@@ -34,13 +37,18 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   useEffect(() => {
     async function loadQuiz() {
       try {
+        console.log('🔄 Loading quiz for province:', province.name);
         setLoading(true);
+        setError(null); // Reset error state
+
         const quiz = await getQuizForProvince(province.name);
+
+        console.log('✅ Quiz loaded successfully:', quiz);
         setQuestions(quiz);
         setLoading(false);
       } catch (err) {
-        console.error('Failed to load quiz:', err);
-        setError('Không thể tải câu hỏi. Vui lòng thử lại.');
+        console.error('❌ Failed to load quiz:', err);
+        setError(MESSAGES.ERRORS.QUIZ_GENERATION_FAILED);
         setLoading(false);
       }
     }
@@ -54,9 +62,8 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Time's up - auto-submit with no answer
           handleAnswer(null);
-          return 30;
+          return QUIZ_CONFIG.TIME_PER_QUESTION;
         }
         return prev - 1;
       });
@@ -73,34 +80,32 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
     setIsAnswered(true);
     setSelectedAnswer(answer);
 
-    // Check if correct
     if (answer === currentQuestion.correctAnswer) {
       setCorrectAnswers((prev) => prev + 1);
     }
 
-    // Move to next question after 2 seconds
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
+        // Next question
         setCurrentQuestionIndex((prev) => prev + 1);
-        setTimeLeft(30);
+        setTimeLeft(QUIZ_CONFIG.TIME_PER_QUESTION);
         setSelectedAnswer(null);
         setIsAnswered(false);
         setHiddenOptions(new Set());
       } else {
-        // Quiz complete
+        // Quiz completed
         const finalScore = answer === currentQuestion.correctAnswer ? correctAnswers + 1 : correctAnswers;
-        const success = finalScore >= 4;
+        const success = finalScore >= QUIZ_CONFIG.PASSING_SCORE;
         onComplete(province, success, finalScore);
       }
-    }, 2000);
+    }, TIMING.ANSWER_FEEDBACK_DURATION);
   };
 
   const handleFiftyFifty = () => {
-    if (powerUps.fiftyFifty || isAnswered) return;
+    if (powerUpsUsed.fiftyFifty || isAnswered) return;
 
-    setPowerUps({ ...powerUps, fiftyFifty: true });
+    setPowerUpsUsed((prev) => ({ ...prev, fiftyFifty: true }));
 
-    // Hide 2 wrong answers
     const wrongOptions = currentQuestion.options.filter(
       (opt) => opt !== currentQuestion.correctAnswer
     );
@@ -109,33 +114,42 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   };
 
   const handleTimeExtension = () => {
-    if (powerUps.timeExtension || isAnswered) return;
+    if (powerUpsUsed.timeExtension || isAnswered) return;
 
-    setPowerUps({ ...powerUps, timeExtension: true });
+    setPowerUpsUsed((prev) => ({ ...prev, timeExtension: true }));
     setTimeLeft((prev) => prev + 15);
   };
 
+  // Loading state
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Đang tải câu hỏi...</p>
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
+        <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
+        <div className="relative z-10 text-center animate-bounce-in">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="mt-6 text-lg font-heading text-muted-foreground">
+            {MESSAGES.INFO.LOADING_QUIZ}
+          </p>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Card className="max-w-md">
+      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
+        <Card className="relative z-10 max-w-md glass-card animate-bounce-in">
           <CardHeader>
-            <CardTitle className="text-destructive">Lỗi</CardTitle>
+            <CardTitle className="text-destructive flex items-center gap-2">
+              <XCircle className="w-6 h-6" />
+              Lỗi
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">{error}</p>
-            <Button onClick={onExit}>Quay lại</Button>
+            <p className="mb-4 font-body">{error}</p>
+            <Button onClick={onExit} className="w-full">Quay lại</Button>
           </CardContent>
         </Card>
       </div>
@@ -144,121 +158,65 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
 
   if (!currentQuestion) return null;
 
-  const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
-
+  // Main quiz view
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4">
-      <div className="max-w-3xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">{province.name}</h1>
-          <Button variant="outline" onClick={onExit}>
-            Thoát
-          </Button>
-        </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
 
-        {/* Progress Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span>
-              Câu hỏi {currentQuestionIndex + 1}/{questions.length}
-            </span>
-            <span>Đúng: {correctAnswers}</span>
-          </div>
-          <Progress value={progress} />
-        </div>
-
-        {/* Timer & Power-ups */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            <span className={cn('text-xl font-bold', timeLeft <= 10 && 'text-destructive')}>
-              {timeLeft}s
-            </span>
-          </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleFiftyFifty}
-            disabled={powerUps.fiftyFifty || isAnswered}
-          >
-            <Split className="w-4 h-4 mr-2" />
-            50/50
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTimeExtension}
-            disabled={powerUps.timeExtension || isAnswered}
-          >
-            <Zap className="w-4 h-4 mr-2" />
-            +15s
-          </Button>
-        </div>
-
-        {/* Question Card */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">{currentQuestion.question}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {currentQuestion.imageUrl && (
-              <img
-                src={currentQuestion.imageUrl}
-                alt="Question illustration"
-                className="w-full h-48 object-cover rounded-lg mb-4"
-              />
-            )}
-
-            <div className="grid gap-3">
-              {currentQuestion.options.map((option, index) => {
-                const isHidden = hiddenOptions.has(option);
-                const isSelected = selectedAnswer === option;
-                const isCorrect = option === currentQuestion.correctAnswer;
-                const showResult = isAnswered;
-
-                return (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    className={cn(
-                      'h-auto py-4 px-6 text-left justify-start whitespace-normal',
-                      isHidden && 'opacity-30 pointer-events-none',
-                      showResult && isCorrect && 'bg-green-100 border-green-500',
-                      showResult && isSelected && !isCorrect && 'bg-red-100 border-red-500'
-                    )}
-                    onClick={() => handleAnswer(option)}
-                    disabled={isAnswered || isHidden}
-                  >
-                    <span className="font-semibold mr-2">{String.fromCharCode(65 + index)}.</span>
-                    {option}
-                  </Button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Feedback */}
-        {isAnswered && (
-          <div
-            className={cn(
-              'p-4 rounded-lg text-center font-semibold',
-              selectedAnswer === currentQuestion.correctAnswer
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            )}
-            role="alert"
-            aria-live="polite"
-          >
-            {selectedAnswer === currentQuestion.correctAnswer
-              ? '✓ Chính xác!'
-              : `✗ Sai rồi! Đáp án đúng là: ${currentQuestion.correctAnswer}`}
-          </div>
-        )}
+      {/* Decorative Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
+        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/30 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/30 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
       </div>
+
+      {/* Header */}
+      <QuizHeader
+        province={province}
+        currentQuestion={currentQuestionIndex + 1}
+        totalQuestions={questions.length}
+        correctAnswers={correctAnswers}
+        onExit={onExit}
+      />
+
+      {/* Main Content */}
+      <main className="relative z-10 pt-32 pb-16 px-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Timer & Power-ups */}
+          <QuizPowerUps
+            timeLeft={timeLeft}
+            maxTime={QUIZ_CONFIG.TIME_PER_QUESTION}
+            fiftyFiftyUsed={powerUpsUsed.fiftyFifty}
+            timeExtensionUsed={powerUpsUsed.timeExtension}
+            isAnswered={isAnswered}
+            onFiftyFifty={handleFiftyFifty}
+            onTimeExtension={handleTimeExtension}
+          />
+
+          {/* Question Card */}
+          <QuizQuestionCard question={currentQuestion} animationDelay={100} />
+
+          {/* Options */}
+          <div className="space-y-4">
+            <QuizOptions
+              options={currentQuestion.options}
+              correctAnswer={currentQuestion.correctAnswer}
+              selectedAnswer={selectedAnswer}
+              hiddenOptions={hiddenOptions}
+              isAnswered={isAnswered}
+              onSelectAnswer={handleAnswer}
+            />
+          </div>
+
+          {/* Feedback */}
+          {isAnswered && (
+            <QuizFeedback
+              isCorrect={selectedAnswer === currentQuestion.correctAnswer}
+              correctAnswer={selectedAnswer !== currentQuestion.correctAnswer ? currentQuestion.correctAnswer : undefined}
+            />
+          )}
+        </div>
+      </main>
     </div>
   );
 }

@@ -32,3 +32,34 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI Assistant directories (Gemini, Claude, Agent, etc.)
+.gemini/
+.claude/
+.agent/
+.shared/
+
+# Temporary documentation files
+AGENTS.md
+AI_MODELS.md
+AI_MODEL_CHECK.md
+ROOT_SPEC.md
+SETUP_SUMMARY.md
+
+# Test files
+test-gemini.js
+test-*.js
+
+# Temporary SVG files
+vn.svg
+vn2.svg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+Thumbs.db

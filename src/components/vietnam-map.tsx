@@ -5,6 +5,7 @@ import { Province } from '@/lib/types';
 import { provinces } from '@/lib/provinces';
 import { useGame } from '@/contexts/game-context';
 import { cn } from '@/lib/utils';
+import { Trophy, MapPin, Lock } from 'lucide-react';
 
 type IslandOverlay = {
   id: string;
@@ -69,13 +70,13 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
   const getProvinceClass = (status: string) => {
     switch (status) {
       case 'conquered':
-        return 'fill-green-500 hover:fill-green-600 cursor-pointer';
+        return 'fill-conquered hover:brightness-110 cursor-pointer drop-shadow-md';
       case 'unlocked':
-        return 'fill-blue-400 hover:fill-blue-500 cursor-pointer';
+        return 'fill-unlocked hover:brightness-110 cursor-pointer drop-shadow-lg animate-pulse-glow';
       case 'locked':
-        return 'fill-gray-300 cursor-not-allowed';
+        return 'fill-locked/40 cursor-not-allowed';
       default:
-        return 'fill-gray-300';
+        return 'fill-locked';
     }
   };
 
@@ -98,12 +99,13 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
   };
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-4">
+    <div className="w-full h-full flex flex-col items-center justify-center relative">
       <svg
         viewBox="0 0 1000 1000"
-        className="max-w-full max-h-[80vh] w-auto h-auto"
+        className="max-w-full max-h-[70vh] w-auto h-auto drop-shadow-xl"
         xmlns="http://www.w3.org/2000/svg"
       >
+        {/* Provinces */}
         <g id="features">
           {provinces.map((province) => {
             const status = getProvinceStatus(province.id);
@@ -114,27 +116,31 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
                 key={province.id}
                 d={province.path}
                 className={cn(
-                  'stroke-white stroke-[0.5] transition-colors duration-200',
-                  getProvinceClass(status)
+                  'stroke-white stroke-[1.5] transition-all duration-300',
+                  getProvinceClass(status),
+                  isInteractive && 'hover:scale-105 transform-origin-center'
                 )}
+                style={{
+                  filter: status === 'unlocked' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : undefined,
+                }}
                 onClick={() => handleProvinceClick(province)}
                 onKeyDown={(e) => handleKeyDown(e, province, status)}
                 tabIndex={isInteractive ? 0 : -1}
                 role={isInteractive ? 'button' : undefined}
-                aria-label={`${province.name} - ${
-                  status === 'conquered'
+                aria-label={`${province.name} - ${status === 'conquered'
                     ? 'đã chinh phục'
                     : status === 'unlocked'
-                    ? 'có thể chơi'
-                    : 'đã khóa'
-                }`}
+                      ? 'có thể chơi'
+                      : 'đã khóa'
+                  }`}
               >
                 <title>{province.name}</title>
               </path>
             );
           })}
-          </g>
+        </g>
 
+        {/* Islands */}
         <g id="islands">
           {islandOverlays.map((island) => {
             const province = provincesById.get(island.provinceId);
@@ -147,20 +153,23 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
                 key={island.id}
                 d={island.path}
                 className={cn(
-                  'stroke-white stroke-[0.5] transition-colors duration-200',
-                  getProvinceClass(status)
+                  'stroke-white stroke-[1.5] transition-all duration-300',
+                  getProvinceClass(status),
+                  isInteractive && 'hover:scale-105 transform-origin-center'
                 )}
+                style={{
+                  filter: status === 'unlocked' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : undefined,
+                }}
                 onClick={() => handleProvinceClick(province)}
                 onKeyDown={(e) => handleKeyDown(e, province, status)}
                 tabIndex={isInteractive ? 0 : -1}
                 role={isInteractive ? 'button' : undefined}
-                aria-label={`${island.name} - ${
-                  status === 'conquered'
-                    ? 'Da chinh phuc'
+                aria-label={`${island.name} - ${status === 'conquered'
+                    ? 'Đã chinh phục'
                     : status === 'unlocked'
-                    ? 'Co the choi'
-                    : 'Dang khoa'
-                }`}
+                      ? 'Có thể chơi'
+                      : 'Đang khóa'
+                  }`}
               >
                 <title>{island.name}</title>
               </path>
@@ -170,23 +179,30 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
       </svg>
 
       {/* Legend */}
-      <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg p-4 shadow-lg">
-        <h3 className="font-semibold mb-2 text-sm">Chú thích</h3>
-        <div className="space-y-1 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-500 rounded"></div>
-            <span>Đã chinh phục</span>
+      <div className="absolute bottom-6 right-6 glass-card rounded-xl p-4 shadow-glass border border-white/20 animate-slide-in-up">
+        <h3 className="font-semibold mb-3 text-sm font-heading">Chú thích</h3>
+        <div className="space-y-2 text-xs font-body">
+          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
+            <div className="flex-shrink-0">
+              <Trophy className="w-5 h-5 text-conquered" />
+            </div>
+            <span className="text-foreground/80">Đã chinh phục</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-400 rounded"></div>
-            <span>Có thể chơi</span>
+          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
+            <div className="flex-shrink-0">
+              <MapPin className="w-5 h-5 text-unlocked" />
+            </div>
+            <span className="text-foreground/80">Có thể chơi</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-gray-300 rounded"></div>
-            <span>Đã khóa</span>
+          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
+            <div className="flex-shrink-0">
+              <Lock className="w-5 h-5 text-locked" />
+            </div>
+            <span className="text-foreground/80">Đã khóa</span>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
