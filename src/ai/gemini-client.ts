@@ -1,7 +1,7 @@
 // Google Gemini AI client
-// Using Google's Generative AI SDK
+// Using Google's GenAI SDK
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 export interface GeneratedQuizQuestion {
   question: string;
@@ -13,12 +13,51 @@ export interface GeneratedQuiz {
   questions: GeneratedQuizQuestion[];
 }
 
-// Initialize Google Generative AI
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENAI_API_KEY || '');
+// Initialize Google GenAI
+const ai = new GoogleGenAI({});
 
 /**
- * Generate quiz questions using Google Gemini 2.0 Flash
- * Model: gemini-2.0-flash-exp (faster, cheaper than Pro)
+ * Helper function to parse and clean JSON from AI response
+ * Removes markdown code blocks if present
+ */
+function parseAIResponse(text: string): GeneratedQuiz {
+  let jsonText = text.trim();
+
+  // Remove markdown code blocks if present
+  if (jsonText.startsWith('```json')) {
+    jsonText = jsonText.replace(/^```json\n/, '').replace(/\n```$/, '');
+  } else if (jsonText.startsWith('```')) {
+    jsonText = jsonText.replace(/^```\n/, '').replace(/\n```$/, '');
+  }
+
+  return JSON.parse(jsonText) as GeneratedQuiz;
+}
+
+/**
+ * Helper function to validate quiz questions
+ * Ensures correct format and number of questions
+ */
+function validateQuizQuestions(
+  quiz: GeneratedQuiz,
+  expectedCount: number
+): void {
+  if (!quiz.questions || quiz.questions.length !== expectedCount) {
+    throw new Error('Invalid number of questions generated');
+  }
+
+  for (const q of quiz.questions) {
+    if (!q.question || !q.options || q.options.length !== 4 || !q.correctAnswer) {
+      throw new Error('Invalid question format');
+    }
+    if (!q.options.includes(q.correctAnswer)) {
+      throw new Error('Correct answer not in options');
+    }
+  }
+}
+
+/**
+ * Generate quiz questions using Google Gemini 3 Flash Preview
+ * Model: gemini-3-flash-preview (latest preview model)
  * Perfect for generating structured quiz content
  */
 export async function generateQuizQuestions(
@@ -26,18 +65,6 @@ export async function generateQuizQuestions(
   numberOfQuestions: number = 5
 ): Promise<GeneratedQuiz> {
   try {
-    // Use Gemini 2.5 Flash (latest stable model)
-    // Free tier quota: 15 RPM, 1M TPM, 1.5K RPD
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        temperature: 1.0,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 2048,
-      },
-    });
-
     const prompt = `Bạn là hệ thống sinh câu hỏi trắc nghiệm về tỉnh ${provinceName}, Việt Nam.
 Sinh đúng ${numberOfQuestions} câu hỏi, hoàn toàn bằng tiếng Việt, mỗi câu có 4 phương án và 1 đáp án đúng.
 Phủ các chủ đề: địa lý, lịch sử, văn hóa, đặc sản, địa danh nổi tiếng.
@@ -60,34 +87,21 @@ Trả về ĐÚNG định dạng JSON sau (không thêm markdown, không thêm t
   ]
 }`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+    // Use Gemini 3 Flash (latest preview model)
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+    });
 
-    // Parse JSON response
-    // Remove markdown code blocks if present
-    let jsonText = text.trim();
-    if (jsonText.startsWith('```json')) {
-      jsonText = jsonText.replace(/^```json\n/, '').replace(/\n```$/, '');
-    } else if (jsonText.startsWith('```')) {
-      jsonText = jsonText.replace(/^```\n/, '').replace(/\n```$/, '');
+    const text = response.text;
+
+    if (!text) {
+      throw new Error('Empty response from AI');
     }
 
-    const parsed = JSON.parse(jsonText) as GeneratedQuiz;
-
-    // Validate the response
-    if (!parsed.questions || parsed.questions.length !== numberOfQuestions) {
-      throw new Error('Invalid number of questions generated');
-    }
-
-    for (const q of parsed.questions) {
-      if (!q.question || !q.options || q.options.length !== 4 || !q.correctAnswer) {
-        throw new Error('Invalid question format');
-      }
-      if (!q.options.includes(q.correctAnswer)) {
-        throw new Error('Correct answer not in options');
-      }
-    }
+    // Parse and validate the AI response
+    const parsed = parseAIResponse(text);
+    validateQuizQuestions(parsed, numberOfQuestions);
 
     return parsed;
   } catch (error: any) {

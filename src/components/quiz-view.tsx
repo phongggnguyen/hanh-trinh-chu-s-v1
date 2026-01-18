@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Province, QuizQuestion } from '@/lib/types';
 import { getQuizForProvince } from '@/actions/quiz.actions';
 import { QUIZ_CONFIG, TIMING, MESSAGES } from '@/lib/constants';
-import { QuizHeader, QuizPowerUps, QuizQuestion as QuizQuestionCard, QuizOptions, QuizFeedback } from '@/components/quiz';
+import { QuizHeader, QuizPowerUps, QuizQuestion as QuizQuestionCard, QuizOptions } from '@/components/quiz';
+import { QuizFeedback } from './quiz/QuizFeedback';
+import { ErrorDisplay } from '@/components/ui/error-display';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { XCircle } from 'lucide-react';
@@ -138,20 +140,13 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen relative overflow-hidden flex items-center justify-center p-4">
-        <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50" />
-        <Card className="relative z-10 max-w-md glass-card animate-bounce-in">
-          <CardHeader>
-            <CardTitle className="text-destructive flex items-center gap-2">
-              <XCircle className="w-6 h-6" />
-              Lỗi
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4 font-body">{error}</p>
-            <Button onClick={onExit} className="w-full">Quay lại</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <ErrorDisplay
+          title="Không thể tải câu hỏi"
+          message={error}
+          onRetry={() => window.location.reload()}
+          onHome={onExit}
+        />
       </div>
     );
   }

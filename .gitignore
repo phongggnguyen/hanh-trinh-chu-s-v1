@@ -50,9 +50,7 @@ SETUP_SUMMARY.md
 test-gemini.js
 test-*.js
 
-# Temporary SVG files
-vn.svg
-vn2.svg
+
 
 # IDE
 .vscode/

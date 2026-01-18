@@ -1,9 +1,16 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { GameProvider } from '@/contexts/game-context';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 const inter = Inter({ subsets: ['latin', 'vietnamese'] });
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#3b82f6',
+};
 
 export const metadata: Metadata = {
   title: 'Hành Trình Chữ S - Khám phá 63 tỉnh thành Việt Nam',
@@ -19,8 +26,6 @@ export const metadata: Metadata = {
     'văn hóa',
   ],
   authors: [{ name: 'Hành Trình Chữ S' }],
-  viewport: 'width=device-width, initial-scale=1',
-  themeColor: '#3b82f6',
   openGraph: {
     title: 'Hành Trình Chữ S - Khám phá 63 tỉnh thành Việt Nam',
     description:
@@ -69,7 +74,9 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <GameProvider>{children}</GameProvider>
+        <ErrorBoundary>
+          <GameProvider>{children}</GameProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

@@ -52,7 +52,7 @@ Trả về ĐÚNG định dạng JSON sau (không thêm markdown, không thêm t
 }`;
 
     const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'qwen3-coder-480b-a35b-instruct',
       messages: [{ role: 'user', content: prompt }],
       temperature: 1.0,
       max_tokens: 2048,

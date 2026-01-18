@@ -1,7 +1,7 @@
 'use server';
 
 import { QuizQuestion } from '@/lib/types';
-import { generateQuizQuestions, generateQuizImage } from '@/ai/openai-client';
+import { generateQuizQuestions, generateQuizImage } from '@/ai/gemini-client';
 import { z } from 'zod';
 import {
   QUIZ_CONFIG,
