@@ -1,15 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Province, QuizQuestion } from '@/lib/types';
 import { getQuizForProvince } from '@/actions/quiz.actions';
 import { QUIZ_CONFIG, TIMING, MESSAGES } from '@/lib/constants';
 import { QuizHeader, QuizPowerUps, QuizQuestion as QuizQuestionCard, QuizOptions } from '@/components/quiz';
 import { QuizFeedback } from './quiz/QuizFeedback';
 import { ErrorDisplay } from '@/components/ui/error-display';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { XCircle } from 'lucide-react';
 
 interface QuizViewProps {
   province: Province;
@@ -41,7 +38,7 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
       try {
         console.log('🔄 Loading quiz for province:', province.name);
         setLoading(true);
-        setError(null); // Reset error state
+        setError(null);
 
         const quiz = await getQuizForProvince(province.name);
 
@@ -57,28 +54,12 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
     loadQuiz();
   }, [province.name]);
 
-  // Timer countdown
-  useEffect(() => {
-    if (loading || isAnswered || questions.length === 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleAnswer(null);
-          return QUIZ_CONFIG.TIME_PER_QUESTION;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps  
-  }, [loading, isAnswered, currentQuestionIndex, questions.length]);
-
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const handleAnswer = (answer: string | null) => {
+  // Move handleAnswer outside useEffect and use useCallback
+  const handleAnswer = useCallback((answer: string | null) => {
     if (isAnswered) return;
+
+    const currentQuestion = questions[currentQuestionIndex];
+    if (!currentQuestion) return;
 
     setIsAnswered(true);
     setSelectedAnswer(answer);
@@ -102,13 +83,31 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
         onComplete(province, success, finalScore);
       }
     }, TIMING.ANSWER_FEEDBACK_DURATION);
-  };
+  }, [isAnswered, questions, currentQuestionIndex, correctAnswers, province, onComplete]);
+
+  // Timer countdown
+  useEffect(() => {
+    if (loading || isAnswered || questions.length === 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          handleAnswer(null);
+          return QUIZ_CONFIG.TIME_PER_QUESTION;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [loading, isAnswered, currentQuestionIndex, questions.length, handleAnswer]);
 
   const handleFiftyFifty = () => {
     if (powerUpsUsed.fiftyFifty || isAnswered) return;
 
     setPowerUpsUsed((prev) => ({ ...prev, fiftyFifty: true }));
 
+    const currentQuestion = questions[currentQuestionIndex];
     const wrongOptions = currentQuestion.options.filter(
       (opt) => opt !== currentQuestion.correctAnswer
     );
@@ -123,12 +122,13 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
     setTimeLeft((prev) => prev + 15);
   };
 
+  const currentQuestion = questions[currentQuestionIndex];
+
   // Loading state
   if (loading) {
     return (
       <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
-        {/* Background handled by global layout */}
-        <div className="relative z-10 text-center animate-bounce-in">
+        <div className="relative z-10 text-center">
           <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="mt-6 text-lg font-heading text-muted-foreground">
             {MESSAGES.INFO.LOADING_QUIZ}
@@ -157,8 +157,6 @@ export function QuizView({ province, onComplete, onExit }: QuizViewProps) {
   // Main quiz view
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background is handled by layout.tsx global pattern */}
-
       {/* Header */}
       <QuizHeader
         province={province}

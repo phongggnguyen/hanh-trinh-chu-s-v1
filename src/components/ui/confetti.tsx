@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ConfettiProps {
     active: boolean;
@@ -28,35 +28,52 @@ export function Confetti({
     colors = ['#3B82F6', '#10B981', '#EF4444', '#F59E0B', '#8B5CF6'],
 }: ConfettiProps) {
     const [particles, setParticles] = useState<Particle[]>([]);
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const prevActiveRef = useRef(active);
 
     useEffect(() => {
-        if (!active) {
+        // Only trigger when active changes from false to true
+        if (active && !prevActiveRef.current) {
+            // Generate particles
+            const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
+                id: Date.now() + i, // Use timestamp for unique IDs
+                x: Math.random() * 100, // percentage
+                y: -10,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                size: Math.random() * 8 + 4,
+                speedX: (Math.random() - 0.5) * 2,
+                speedY: Math.random() * 3 + 2,
+                rotation: Math.random() * 360,
+                rotationSpeed: (Math.random() - 0.5) * 10,
+            }));
+
+            setParticles(newParticles);
+
+            // Clear after duration
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+
+            timerRef.current = setTimeout(() => {
+                setParticles([]);
+            }, duration);
+        } else if (!active && prevActiveRef.current) {
+            // Reset when active becomes false
             setParticles([]);
-            return;
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+                timerRef.current = null;
+            }
         }
 
-        // Generate particles
-        const newParticles: Particle[] = Array.from({ length: particleCount }, (_, i) => ({
-            id: i,
-            x: Math.random() * 100, // percentage
-            y: -10,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            size: Math.random() * 8 + 4,
-            speedX: (Math.random() - 0.5) * 2,
-            speedY: Math.random() * 3 + 2,
-            rotation: Math.random() * 360,
-            rotationSpeed: (Math.random() - 0.5) * 10,
-        }));
+        prevActiveRef.current = active;
 
-        setParticles(newParticles);
-
-        // Clear after duration
-        const timer = setTimeout(() => {
-            setParticles([]);
-        }, duration);
-
-        return () => clearTimeout(timer);
-    }, [active, duration, particleCount, colors]);
+        return () => {
+            if (timerRef.current) {
+                clearTimeout(timerRef.current);
+            }
+        };
+    }, [active]); // Only depend on 'active' to prevent infinite loops
 
     if (particles.length === 0) return null;
 

@@ -8,6 +8,7 @@ import { QuizCompletionModal } from './quiz-completion-modal';
 import { useGame } from '@/contexts/game-context';
 import { GameHeader, GameStats, GameInstructions } from '@/components/game';
 import { QUIZ_CONFIG } from '@/lib/constants';
+import { MapPin } from 'lucide-react';
 
 export function GameBoard() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
@@ -78,16 +79,6 @@ export function GameBoard() {
   // Show map view by default
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Gradient Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-green-50 animate-gradient-shift" />
-
-      {/* Decorative Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/3 w-64 h-64 bg-success/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-      </div>
-
       {/* Header */}
       <GameHeader />
 
@@ -95,10 +86,18 @@ export function GameBoard() {
       <GameStats conqueredCount={conqueredCount} unlockedCount={unlockedCount} />
 
       {/* Main Content */}
-      <main className="relative z-10 pt-48 pb-16 px-4">
+      <main className="relative z-10 pt-48 pb-24 px-4">
         <div className="max-w-7xl mx-auto">
-          {/* Map Card */}
-          <div className="glass-card rounded-3xl shadow-glass p-8 hover:shadow-glow-sm transition-all duration-300 border border-white/20 animate-slide-in-up">
+          {/* Welcome Banner - Simple version */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card border border-border text-sm font-body text-primary shadow-sm">
+              <MapPin className="w-4 h-4" />
+              <span>Khám phá dải đất hình chữ S</span>
+            </div>
+          </div>
+
+          {/* Map Card - Simpler styling */}
+          <div className="bg-card rounded-2xl shadow-lg p-6 md:p-8 border border-border">
             <VietnamMap onProvinceSelect={handleProvinceSelect} />
           </div>
 
@@ -107,14 +106,23 @@ export function GameBoard() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 z-20 py-4 bg-gradient-to-t from-white/80 to-transparent backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-sm text-muted-foreground font-body">
-            Hành Trình Chữ S •
-            <span className="mx-2">🇻🇳</span>
-            Khám phá Việt Nam qua những câu quiz thú vị
-          </p>
+      {/* Footer - Simpler */}
+      <footer className="fixed bottom-0 left-0 right-0 z-20">
+        <div className="bg-gradient-to-t from-background via-background/95 to-transparent pt-6 pb-4">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="bg-card rounded-xl px-5 py-3 flex items-center justify-between border border-border shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+                  <span className="text-white font-heading font-bold text-base">S</span>
+                </div>
+                <div>
+                  <p className="font-heading font-semibold text-foreground text-sm">Hành Trình Chữ S</p>
+                  <p className="text-xs text-muted-foreground font-body">Khám phá Việt Nam qua quiz</p>
+                </div>
+              </div>
+              <span className="text-xl">🇻🇳</span>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

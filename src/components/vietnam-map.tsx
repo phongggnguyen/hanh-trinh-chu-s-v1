@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Province } from '@/lib/types';
 import { provinces } from '@/lib/provinces';
 import { useGame } from '@/contexts/game-context';
@@ -14,13 +14,12 @@ type IslandOverlay = {
   path: string;
 };
 
-// Lightweight overlays for key islands/quan dao (scaled to current 0 0 1000 1000 viewBox)
+// Lightweight overlays for key islands/quan dao
 const islandOverlays: IslandOverlay[] = [
   {
     id: 'phu-quoc',
     name: 'Phu Quoc (Kien Giang)',
     provinceId: 'kien-giang',
-    // Derived from vn2.svg (scaled to current viewBox)
     path: 'M 405.55 852.31 C 402.76 850.10 399.39 849.75 401.60 847.66 C 403.81 845.56 404.51 847.77 406.37 845.45 C 408.23 843.12 410.90 839.75 410.90 839.75 C 410.90 839.75 416.72 841.84 416.84 848.47 C 416.95 855.10 414.16 857.08 414.51 862.20 C 414.86 867.32 414.51 870.11 414.51 870.46 C 414.51 870.81 409.74 868.48 409.74 863.25 C 409.74 858.01 405.55 852.31 405.55 852.31',
   },
   {
@@ -55,6 +54,9 @@ interface VietnamMapProps {
 
 export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
   const { state } = useGame();
+  const [hoveredProvince, setHoveredProvince] = useState<Province | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
   const provincesById = React.useMemo(() => {
     const map = new Map<string, Province>();
     provinces.forEach((p) => map.set(p.id, p));
@@ -70,11 +72,11 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
   const getProvinceClass = (status: string) => {
     switch (status) {
       case 'conquered':
-        return 'fill-conquered hover:brightness-110 cursor-pointer drop-shadow-md';
+        return 'fill-conquered cursor-pointer';
       case 'unlocked':
-        return 'fill-unlocked hover:brightness-110 cursor-pointer drop-shadow-lg animate-pulse-glow';
+        return 'fill-unlocked cursor-pointer';
       case 'locked':
-        return 'fill-locked/40 cursor-not-allowed';
+        return 'fill-locked/30 cursor-not-allowed';
       default:
         return 'fill-locked';
     }
@@ -98,11 +100,51 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
     }
   };
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePos({ x: e.clientX, y: e.clientY });
+  };
+
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center relative">
+    <div
+      className="w-full h-full flex flex-col items-center justify-center relative"
+      onMouseMove={handleMouseMove}
+    >
+      {/* Tooltip - Simple version */}
+      {hoveredProvince && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{
+            left: mousePos.x + 16,
+            top: mousePos.y - 8,
+          }}
+        >
+          <div className="bg-card rounded-lg px-3 py-2 shadow-lg border border-border">
+            <div className="flex items-center gap-2">
+              {getProvinceStatus(hoveredProvince.id) === 'conquered' && (
+                <Trophy className="w-4 h-4 text-conquered" />
+              )}
+              {getProvinceStatus(hoveredProvince.id) === 'unlocked' && (
+                <MapPin className="w-4 h-4 text-unlocked" />
+              )}
+              {getProvinceStatus(hoveredProvince.id) === 'locked' && (
+                <Lock className="w-4 h-4 text-locked" />
+              )}
+              <span className="font-heading font-semibold text-foreground text-sm">
+                {hoveredProvince.name}
+              </span>
+            </div>
+            <div className="text-xs text-muted-foreground font-body mt-0.5">
+              {getProvinceStatus(hoveredProvince.id) === 'conquered' && 'Đã chinh phục ✓'}
+              {getProvinceStatus(hoveredProvince.id) === 'unlocked' && 'Nhấn để chơi quiz'}
+              {getProvinceStatus(hoveredProvince.id) === 'locked' && 'Chưa mở khóa'}
+            </div>
+          </div>
+        </div>
+      )}
+
       <svg
         viewBox="0 0 1000 1000"
-        className="max-w-full max-h-[70vh] w-auto h-auto drop-shadow-xl"
+        className="max-w-full max-h-[70vh] w-auto h-auto"
         xmlns="http://www.w3.org/2000/svg"
       >
         {/* Provinces */}
@@ -110,21 +152,21 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
           {provinces.map((province) => {
             const status = getProvinceStatus(province.id);
             const isInteractive = status === 'unlocked';
+            const isHovered = hoveredProvince?.id === province.id;
 
             return (
               <path
                 key={province.id}
                 d={province.path}
                 className={cn(
-                  'stroke-white stroke-[1.5] transition-all duration-300',
+                  'stroke-white stroke-[1.5] transition-colors duration-150',
                   getProvinceClass(status),
-                  isInteractive && 'hover:scale-105 transform-origin-center'
+                  isHovered && 'brightness-110'
                 )}
-                style={{
-                  filter: status === 'unlocked' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : undefined,
-                }}
                 onClick={() => handleProvinceClick(province)}
                 onKeyDown={(e) => handleKeyDown(e, province, status)}
+                onMouseEnter={() => setHoveredProvince(province)}
+                onMouseLeave={() => setHoveredProvince(null)}
                 tabIndex={isInteractive ? 0 : -1}
                 role={isInteractive ? 'button' : undefined}
                 aria-label={`${province.name} - ${status === 'conquered'
@@ -153,13 +195,9 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
                 key={island.id}
                 d={island.path}
                 className={cn(
-                  'stroke-white stroke-[1.5] transition-all duration-300',
-                  getProvinceClass(status),
-                  isInteractive && 'hover:scale-105 transform-origin-center'
+                  'stroke-white stroke-[1.5] transition-colors duration-150',
+                  getProvinceClass(status)
                 )}
-                style={{
-                  filter: status === 'unlocked' ? 'drop-shadow(0 0 8px rgba(59, 130, 246, 0.6))' : undefined,
-                }}
                 onClick={() => handleProvinceClick(province)}
                 onKeyDown={(e) => handleKeyDown(e, province, status)}
                 tabIndex={isInteractive ? 0 : -1}
@@ -178,31 +216,39 @@ export function VietnamMap({ onProvinceSelect }: VietnamMapProps) {
         </g>
       </svg>
 
-      {/* Legend */}
-      <div className="absolute bottom-6 right-6 glass-card rounded-xl p-4 shadow-glass border border-white/20 animate-slide-in-up">
+      {/* Legend - Simple */}
+      <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6 bg-card rounded-xl p-4 shadow-md border border-border">
         <h3 className="font-semibold mb-3 text-sm font-heading">Chú thích</h3>
         <div className="space-y-2 text-xs font-body">
-          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
-            <div className="flex-shrink-0">
-              <Trophy className="w-5 h-5 text-conquered" />
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md bg-conquered flex items-center justify-center">
+              <Trophy className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-foreground/80">Đã chinh phục</span>
+            <div>
+              <span className="text-foreground font-medium">Đã chinh phục</span>
+              <span className="text-muted-foreground ml-1">({state.conquered.size})</span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
-            <div className="flex-shrink-0">
-              <MapPin className="w-5 h-5 text-unlocked" />
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md bg-unlocked flex items-center justify-center">
+              <MapPin className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-foreground/80">Có thể chơi</span>
+            <div>
+              <span className="text-foreground font-medium">Có thể chơi</span>
+              <span className="text-muted-foreground ml-1">({state.unlocked.size})</span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 group cursor-pointer hover-lift">
-            <div className="flex-shrink-0">
-              <Lock className="w-5 h-5 text-locked" />
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-md bg-locked/30 flex items-center justify-center">
+              <Lock className="w-3.5 h-3.5 text-locked" />
             </div>
-            <span className="text-foreground/80">Đã khóa</span>
+            <div>
+              <span className="text-foreground font-medium">Đã khóa</span>
+              <span className="text-muted-foreground ml-1">({63 - state.conquered.size - state.unlocked.size})</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -1,86 +1,88 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ProgressRing } from '@/components/ui/progress-ring';
-import { BadgeIcon } from '@/components/ui/badge-icon';
 import { GAME_STATE } from '@/lib/constants';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Trophy, MapPin, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface GameStatsProps {
-    /** Số tỉnh đã chinh phục */
     conqueredCount: number;
-
-    /** Số tỉnh đã mở khóa (có thể chơi) */
     unlockedCount: number;
 }
 
 /**
- * Component hiển thị thống kê game
- * Bao gồm: overall progress, số tỉnh đã chinh phục, đã mở khóa, bị khóa
- * Có thể thu gọn/mở rộng
+ * Component hiển thị thống kê game - Simple version
  */
 export function GameStats({ conqueredCount, unlockedCount }: GameStatsProps) {
     const totalProvinces = GAME_STATE.TOTAL_PROVINCES;
-    const lockedCount = totalProvinces - unlockedCount;
+    const lockedCount = totalProvinces - conqueredCount - unlockedCount;
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const progressPercent = Math.round((conqueredCount / totalProvinces) * 100);
 
     return (
         <div className="fixed top-24 left-4 right-4 z-30">
-            <div className="max-w-7xl mx-auto bg-card/90 backdrop-blur-md rounded-xl border-4 border-double border-primary/20 shadow-lg overflow-hidden transition-all duration-300">
+            <div className="max-w-7xl mx-auto bg-card rounded-xl border border-border shadow-md">
                 {/* Toggle Button */}
-                <div className="px-6 py-3 flex items-center justify-between border-b border-primary/10">
+                <div className="px-4 md:px-5 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="text-lg font-bold font-heading text-primary">
-                            {conqueredCount}/{totalProvinces}
+                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                            <span className="font-heading font-bold text-base text-primary">{progressPercent}%</span>
                         </div>
-                        <div className="text-sm text-muted-foreground font-body">
-                            Tiến độ
+                        <div>
+                            <div className="text-sm font-heading font-semibold text-foreground">
+                                {conqueredCount}/{totalProvinces} tỉnh thành
+                            </div>
+                            <div className="text-xs text-muted-foreground font-body">
+                                Tiến độ chinh phục
+                            </div>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="hover:bg-primary/10 transition-colors"
+                        className="hover:bg-muted rounded-lg"
                     >
                         {isCollapsed ? (
-                            <ChevronDown className="w-5 h-5 text-primary" />
+                            <ChevronDown className="w-5 h-5 text-muted-foreground" />
                         ) : (
-                            <ChevronUp className="w-5 h-5 text-primary" />
+                            <ChevronUp className="w-5 h-5 text-muted-foreground" />
                         )}
                     </Button>
                 </div>
 
-                {/* Stats Content - Collapsible */}
+                {/* Stats Content */}
                 {!isCollapsed && (
-                    <div className="px-6 py-4 animate-slide-in-up">
-                        <div className="flex items-center justify-center gap-8">
+                    <div className="px-4 md:px-5 py-4 border-t border-border">
+                        <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
                             {/* Overall Progress */}
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
                                 <ProgressRing
                                     value={conqueredCount}
                                     max={totalProvinces}
-                                    size={60}
-                                    strokeWidth={6}
+                                    size={48}
+                                    strokeWidth={5}
                                     color="success"
                                     showLabel={false}
                                 />
                                 <div>
-                                    <div className="text-lg font-bold font-heading">
+                                    <div className="text-base font-bold font-heading">
                                         {conqueredCount}/{totalProvinces}
                                     </div>
                                     <div className="text-xs text-muted-foreground font-body">
-                                        Tỉnh đã chinh phục
+                                        Tổng tiến độ
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="h-12 w-px bg-border" />
-
                             {/* Conquered */}
-                            <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                                <BadgeIcon variant="conquered" size={48} animated={false} />
+                            <div className="flex items-center gap-2 p-2 rounded-lg">
+                                <div className="w-9 h-9 rounded-lg bg-conquered flex items-center justify-center">
+                                    <Trophy className="w-4 h-4 text-white" />
+                                </div>
                                 <div>
-                                    <div className="text-lg font-bold font-heading text-success">
+                                    <div className="text-base font-bold font-heading text-conquered">
                                         {conqueredCount}
                                     </div>
                                     <div className="text-xs text-muted-foreground font-body">
@@ -90,10 +92,12 @@ export function GameStats({ conqueredCount, unlockedCount }: GameStatsProps) {
                             </div>
 
                             {/* Unlocked */}
-                            <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                                <BadgeIcon variant="unlocked" size={48} animated showGlow />
+                            <div className="flex items-center gap-2 p-2 rounded-lg">
+                                <div className="w-9 h-9 rounded-lg bg-unlocked flex items-center justify-center">
+                                    <MapPin className="w-4 h-4 text-white" />
+                                </div>
                                 <div>
-                                    <div className="text-lg font-bold font-heading text-unlocked">
+                                    <div className="text-base font-bold font-heading text-unlocked">
                                         {unlockedCount}
                                     </div>
                                     <div className="text-xs text-muted-foreground font-body">
@@ -103,10 +107,12 @@ export function GameStats({ conqueredCount, unlockedCount }: GameStatsProps) {
                             </div>
 
                             {/* Locked */}
-                            <div className="flex items-center gap-3 hover-lift cursor-pointer">
-                                <BadgeIcon variant="locked" size={48} animated={false} />
+                            <div className="flex items-center gap-2 p-2 rounded-lg">
+                                <div className="w-9 h-9 rounded-lg bg-locked/20 flex items-center justify-center">
+                                    <Lock className="w-4 h-4 text-locked" />
+                                </div>
                                 <div>
-                                    <div className="text-lg font-bold font-heading text-muted-foreground">
+                                    <div className="text-base font-bold font-heading text-muted-foreground">
                                         {lockedCount}
                                     </div>
                                     <div className="text-xs text-muted-foreground font-body">

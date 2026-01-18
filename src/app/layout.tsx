@@ -10,7 +10,7 @@ const inter = Inter({ subsets: ['latin', 'vietnamese'] });
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#3b82f6',
+  themeColor: '#C0392B',
 };
 
 export const metadata: Metadata = {
@@ -75,9 +75,12 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} min-h-screen relative overflow-x-hidden selection:bg-primary/20`}>
-        {/* Global Background Elements */}
+        {/* Simple Background - Lighter for better performance */}
         <div className="fixed inset-0 z-0 pointer-events-none">
-          <DongSonPattern className="opacity-[0.03] text-primary w-full h-full object-cover" />
+          {/* Cultural Pattern Overlay - Subtle */}
+          <DongSonPattern className="opacity-[0.02] text-primary w-full h-full object-cover" />
+
+          {/* Light texture */}
           <TextureOverlay />
         </div>
 

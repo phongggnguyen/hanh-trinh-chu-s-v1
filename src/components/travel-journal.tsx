@@ -14,7 +14,7 @@ import { ProgressRing } from '@/components/ui/progress-ring';
 import { BadgeIcon } from '@/components/ui/badge-icon';
 import { useGame } from '@/contexts/game-context';
 import { provinces } from '@/lib/provinces';
-import { BookOpen, MapPin, Trophy, Sparkles } from 'lucide-react';
+import { BookOpen, MapPin, Trophy, Sparkles, Calendar, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function TravelJournal() {
@@ -32,30 +32,30 @@ export function TravelJournal() {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="gap-2 glass-light border border-white/20 hover-lift font-heading"
+          className="gap-2 glass-light border border-white/30 hover-lift font-heading shadow-md hover:shadow-glow-sm transition-all rounded-xl"
         >
           <BookOpen className="w-4 h-4" />
-          Nhật ký
-          <span className="ml-1 px-2 py-0.5 bg-gradient-to-r from-primary to-secondary text-white text-xs rounded-full font-bold shadow-sm">
+          <span className="hidden md:inline">Nhật ký</span>
+          <span className="ml-1 px-2.5 py-0.5 bg-gradient-to-r from-primary to-secondary text-white text-xs rounded-full font-bold shadow-sm">
             {conqueredCount}/{totalProvinces}
           </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col glass-card border-2 border-white/20">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-hidden flex flex-col glass-premium border border-white/30 shadow-glass-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3 text-2xl font-heading">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-br from-primary via-destructive to-secondary rounded-2xl flex items-center justify-center shadow-glow-sm">
+              <BookOpen className="w-6 h-6 text-white" />
             </div>
-            <span className="gradient-text">Nhật ký hành trình</span>
+            <span className="gradient-text-animated">Nhật ký hành trình</span>
           </DialogTitle>
-          <DialogDescription className="font-body">
-            Theo dõi tiến trình khám phá 63 tỉnh thành Việt Nam
+          <DialogDescription className="font-body text-foreground/70">
+            Theo dõi tiến trình khám phá 63 tỉnh thành Việt Nam 🇻🇳
           </DialogDescription>
         </DialogHeader>
 
-        {/* Progress Summary */}
-        <div className="glass-light rounded-2xl p-6 border border-white/20 animate-slide-in-up">
+        {/* Progress Summary - Premium card */}
+        <div className="glass-light rounded-2xl p-6 border border-white/20 shadow-inner-glow animate-slide-in-up">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
               <ProgressRing
@@ -66,8 +66,11 @@ export function TravelJournal() {
                 color="success"
               />
               <div>
-                <div className="text-sm text-muted-foreground font-body mb-1">Tiến độ chinh phục</div>
-                <div className="text-3xl font-bold font-heading gradient-text mb-1">
+                <div className="text-sm text-muted-foreground font-body mb-1 flex items-center gap-2">
+                  <Award className="w-4 h-4" />
+                  Tiến độ chinh phục
+                </div>
+                <div className="text-4xl font-bold font-heading gradient-text mb-2">
                   {progress}%
                 </div>
                 <div className="text-sm text-muted-foreground font-body">
@@ -78,20 +81,25 @@ export function TravelJournal() {
 
             {conqueredCount >= totalProvinces && (
               <div className="animate-bounce-in">
-                <Sparkles className="w-12 h-12 text-warning animate-pulse-glow" />
+                <div className="relative">
+                  <Sparkles className="w-16 h-16 text-warning" />
+                  <Sparkles className="w-16 h-16 text-warning absolute top-0 left-0 animate-sparkle-rotate" />
+                </div>
               </div>
             )}
           </div>
         </div>
 
         {/* Conquered Provinces List */}
-        <div className="flex-1 overflow-y-auto mt-4 px-1">
+        <div className="flex-1 overflow-y-auto mt-4 px-1 custom-scrollbar">
           {conqueredCount === 0 ? (
-            <div className="text-center py-16 text-muted-foreground animate-slide-in-up">
-              <MapPin className="w-16 h-16 mx-auto mb-4 opacity-30" />
-              <p className="font-heading text-lg mb-2">Chưa có tỉnh nào được chinh phục</p>
-              <p className="text-sm font-body">
-                Hãy bắt đầu từ Hà Nội hoặc TP. Hồ Chí Minh!
+            <div className="text-center py-20 text-muted-foreground animate-fade-scale-in">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-muted/20 to-muted/10 flex items-center justify-center">
+                <MapPin className="w-12 h-12 opacity-30" />
+              </div>
+              <p className="font-heading text-xl mb-3 text-foreground">Chưa có tỉnh nào được chinh phục</p>
+              <p className="text-sm font-body max-w-sm mx-auto">
+                Hãy bắt đầu hành trình từ <span className="font-semibold text-primary">Hà Nội</span> hoặc <span className="font-semibold text-primary">TP. Hồ Chí Minh</span>!
               </p>
             </div>
           ) : (
@@ -105,31 +113,38 @@ export function TravelJournal() {
                   <div
                     key={province.id}
                     className={cn(
-                      'glass-light rounded-xl p-4 border border-white/20 hover-lift cursor-pointer',
-                      'transition-all duration-300 animate-slide-in-up'
+                      'glass-light rounded-2xl p-4 border border-white/20 hover-lift cursor-default group',
+                      'transition-all duration-300 animate-slide-in-up hover:shadow-success-glow'
                     )}
                     style={{ animationDelay: `${index * 30}ms` }}
                   >
                     <div className="flex items-start gap-3">
-                      <BadgeIcon variant="conquered" size={40} animated={false} showGlow />
+                      <div className="flex-shrink-0 transition-transform group-hover:scale-110 duration-300">
+                        <BadgeIcon variant="conquered" size={44} animated={false} showGlow />
+                      </div>
 
                       <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-sm font-heading text-foreground mb-1">
+                        <h4 className="font-semibold text-base font-heading text-foreground mb-2 flex items-center gap-2">
                           {province.name}
+                          <Trophy className="w-4 h-4 text-warning opacity-0 group-hover:opacity-100 transition-opacity" />
                         </h4>
                         {journalEntry && (
                           <div className="flex items-center gap-3 text-xs text-muted-foreground font-body">
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-success/10 text-success">
                               <Trophy className="w-3 h-3" />
-                              <span>{journalEntry.score}/5</span>
+                              <span className="font-semibold">{journalEntry.score}/5</span>
                             </div>
-                            <span>•</span>
-                            <span>
-                              {new Date(journalEntry.conqueredAt).toLocaleDateString('vi-VN', {
-                                day: '2-digit',
-                                month: '2-digit',
-                              })}
-                            </span>
+                            <span className="opacity-50">•</span>
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="w-3 h-3" />
+                              <span>
+                                {new Date(journalEntry.conqueredAt).toLocaleDateString('vi-VN', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: '2-digit',
+                                })}
+                              </span>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -143,16 +158,16 @@ export function TravelJournal() {
 
         {/* Achievement Message */}
         {conqueredCount === totalProvinces && (
-          <div className="mt-4 p-6 glass-card rounded-2xl text-center border-2 border-warning/30 animate-bounce-in">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <Sparkles className="w-6 h-6 text-warning" />
-              <p className="text-xl font-bold font-heading gradient-text">
+          <div className="mt-4 p-6 glass-premium rounded-2xl text-center border border-warning/30 shadow-warning-glow animate-bounce-in">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Sparkles className="w-6 h-6 text-warning animate-sparkle" />
+              <p className="text-2xl font-bold font-heading gradient-text-animated">
                 Chúc mừng hoàn thành!
               </p>
-              <Sparkles className="w-6 h-6 text-warning" />
+              <Sparkles className="w-6 h-6 text-warning animate-sparkle" style={{ animationDelay: '0.5s' }} />
             </div>
-            <p className="text-sm text-foreground/70 font-body">
-              Bạn đã chinh phục tất cả 63 tỉnh thành Việt Nam! 🎉🇻🇳
+            <p className="text-sm text-foreground/80 font-body">
+              Bạn đã chinh phục tất cả <span className="font-bold text-success">63 tỉnh thành</span> Việt Nam! 🎉🇻🇳
             </p>
           </div>
         )}

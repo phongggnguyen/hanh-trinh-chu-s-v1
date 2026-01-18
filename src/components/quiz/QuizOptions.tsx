@@ -24,8 +24,7 @@ interface QuizOptionsProps {
 }
 
 /**
- * Component hiển thị các lựa chọn trả lời
- * Xử lý hiển thị kết quả đúng/sai, ẩn options do 50/50
+ * Component hiển thị các lựa chọn trả lời với simple hover effects
  */
 export function QuizOptions({
     options,
@@ -48,24 +47,43 @@ export function QuizOptions({
                         key={index}
                         variant="ghost"
                         className={cn(
-                            'h-auto py-4 px-6 text-left justify-start whitespace-normal font-body text-base transition-all duration-300',
-                            'bg-card border-2 border-primary/10 hover:border-primary/50 shadow-sm hover:shadow-md hover:-translate-y-1',
-                            isHidden && 'opacity-20 pointer-events-none grayscale',
-                            showResult && isCorrect && 'bg-success/10 border-success text-success shadow-[0_0_15px_rgba(46,204,113,0.3)]',
-                            showResult && isSelected && !isCorrect && 'bg-destructive/10 border-destructive text-destructive shadow-[0_0_15px_rgba(192,57,43,0.3)]'
+                            'h-auto py-4 px-5 text-left justify-start whitespace-normal font-body text-base transition-colors duration-200',
+                            'bg-card border-2 border-border rounded-xl shadow-sm',
+                            // Hover states - simple, không animation phức tạp
+                            !isHidden && !isAnswered && 'hover:border-primary/50 hover:bg-primary/5 cursor-pointer',
+                            isHidden && 'opacity-30 pointer-events-none',
+                            // Result states
+                            showResult && isCorrect && 'bg-success/10 border-success text-foreground',
+                            showResult && isSelected && !isCorrect && 'bg-destructive/10 border-destructive text-foreground'
                         )}
                         onClick={() => onSelectAnswer(option)}
                         disabled={isAnswered || isHidden}
                     >
-                        <span className="font-bold mr-3 text-primary">
-                            {String.fromCharCode(65 + index)}.
+                        {/* Answer label */}
+                        <span className={cn(
+                            "font-bold mr-3 text-base w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
+                            !showResult && "bg-primary text-white",
+                            showResult && isCorrect && "bg-success text-white",
+                            showResult && isSelected && !isCorrect && "bg-destructive text-white"
+                        )}>
+                            {String.fromCharCode(65 + index)}
                         </span>
-                        <span>{option}</span>
+
+                        {/* Answer text - đảm bảo luôn đọc được */}
+                        <span className={cn(
+                            "flex-1 text-foreground",
+                            showResult && isCorrect && "font-semibold text-success",
+                            showResult && isSelected && !isCorrect && "text-destructive"
+                        )}>
+                            {option}
+                        </span>
+
+                        {/* Result icons */}
                         {showResult && isCorrect && (
-                            <CheckCircle2 className="w-5 h-5 ml-auto text-success" />
+                            <CheckCircle2 className="w-5 h-5 ml-3 text-success flex-shrink-0" />
                         )}
                         {showResult && isSelected && !isCorrect && (
-                            <XCircle className="w-5 h-5 ml-auto text-destructive" />
+                            <XCircle className="w-5 h-5 ml-3 text-destructive flex-shrink-0" />
                         )}
                     </Button>
                 );
